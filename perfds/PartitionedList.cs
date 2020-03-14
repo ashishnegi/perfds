@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace partitionedlist
+namespace PerfDS
 {
     public class PartitionedList<T> : IEnumerable<T>
     {
@@ -54,7 +54,7 @@ namespace partitionedlist
                 this.noOfItemsInCurrBucket = 0;
                 this.currentBucketIndex += 1;
             }
-            
+
             if (this.currentBucketIndex >= this.buckets.Count)
             {
                 this.currentBucket = new T[this.bucketSize];

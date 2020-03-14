@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
-namespace partitionedlist
+namespace PerfDS
 {
     [TestClass]
     public class PartitionedListTests
