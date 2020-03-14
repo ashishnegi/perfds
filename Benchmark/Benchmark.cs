@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 
-namespace partitionedlist
+namespace PerfDS
 {
     public class ListCompare
     {

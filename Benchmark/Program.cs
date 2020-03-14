@@ -1,6 +1,6 @@
 ﻿using BenchmarkDotNet.Running;
 
-namespace partitionedlist
+namespace PerfDS
 {
     public class Program
     {
