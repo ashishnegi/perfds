@@ -8,7 +8,7 @@ namespace PerfDS
     public class PartitionedListTests
     {
         [TestMethod]
-        public void CountTestWith0InitialCapactiy()
+        public void CountTestWith0InitialCapacity()
         {
             Prop.ForAll<int[]>(xs =>
             {
@@ -23,7 +23,7 @@ namespace PerfDS
         }
 
         [TestMethod]
-        public void CountTestWithExactInitialCapactiy()
+        public void CountTestWithExactInitialCapacity()
         {
             Prop.ForAll<int[]>(xs =>
             {
