@@ -1,0 +1,15 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 2 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+BuildScript: C:\Users\asnegi\Documents\Visual Studio 2017\Projects\partitionedlist\Benchmark\bin\Release\36531057-e715-4c21-8abc-119f053ffa7f.bat
+// ***** Done, took 00:00:02 (2.25 sec)   *****
+// Found 2 benchmarks:
+//   ListCompare.SystemListAddAndIterate: DefaultJob [N=10000000]
+//   ListCompare.PartitionedListAddAndIterate: DefaultJob [N=10000000]
+
+// **************************
+// Benchmark: ListCompare.SystemListAddAndIterate: DefaultJob [N=10000000]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\asnegi\Documents\Visual Studio 2017\Projects\partitionedlist\Benchmark\bin\Release\36531057-e715-4c21-8abc-119f053ffa7f.exe --benchmarkName "partitionedlist.ListCompare.SystemListAddAndIterate(N: 10000000)" --job "Default" --benchmarkId 0 in 

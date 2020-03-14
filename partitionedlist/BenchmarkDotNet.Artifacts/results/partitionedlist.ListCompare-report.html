@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>partitionedlist.ListCompare-20200313-152508</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18363
+Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
+  [Host]     : .NET Framework 4.8 (4.8.4121.0), X86 LegacyJIT
+  DefaultJob : .NET Framework 4.8 (4.8.4121.0), X86 LegacyJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>   Method</th><th>N</th><th>  Mean</th><th>Error</th><th>StdDev</th>
+</tr>
+</thead><tbody><tr><td>SystemList</td><td>10000</td><td>57.06 us</td><td>1.123 us</td><td>2.535 us</td>
+</tr><tr><td>PartitionedList</td><td>10000</td><td>246.58 us</td><td>5.967 us</td><td>17.122 us</td>
+</tr><tr><td>SystemList</td><td>1000000</td><td>7,007.04 us</td><td>139.330 us</td><td>287.741 us</td>
+</tr><tr><td>PartitionedList</td><td>1000000</td><td>24,814.10 us</td><td>484.919 us</td><td>1,054.175 us</td>
+</tr></tbody></table>
+</body>
+</html>
