@@ -96,6 +96,33 @@ namespace PerfDS
                 }
             }).QuickCheckThrowOnFailure();
         }
+
+        [TestMethod]
+        public void SSWDSnapshotViewNotAffectedByNewWrites()
+        {
+            Prop.ForAll<Tuple<int, int>[]>(kvs => {
+                var dict = new SnapshotSingleWriterDictionary<int, int>();
+
+                foreach (var kv in kvs)
+                {
+                    dict.Add(kv.Item1, kv.Item2);
+                }
+
+                var view = dict.GetSnapshot();
+
+                foreach (var kv in kvs)
+                {
+                    dict.Add(kv.Item1, kv.Item2 + 1);
+                    int actualValue;
+
+                    Assert.IsTrue(view.TryGetValue(kv.Item1, out actualValue));
+                    Assert.AreNotEqual(kv.Item2, actualValue);
+
+                    Assert.IsTrue(dict.TryGetValue(kv.Item1, out actualValue));
+                    Assert.AreNotEqual(kv.Item2 + 1, actualValue);
+                }
+            });
+        }
     }
 
     [TestClass]

@@ -36,7 +36,13 @@ namespace PerfDS
 
         public bool TryGetValue(TKey key, out TValue value)
         {
+            // TODO : just read the last item and don't iterate on the list.
             return this.TryGetValue(key, out value, this.version);
+        }
+
+        public SnapshotView GetSnapshot()
+        {
+            return new SnapshotView(this);
         }
 
         public class SnapshotView
@@ -47,7 +53,7 @@ namespace PerfDS
                 this.myVersion = this.dictionary.GetReadVersion();
             }
 
-            bool TryGetValue(TKey key, out TValue value)
+            public bool TryGetValue(TKey key, out TValue value)
             {
                 return this.dictionary.TryGetValue(key, out value, this.myVersion);
             }
