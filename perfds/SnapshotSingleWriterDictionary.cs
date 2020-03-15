@@ -2,6 +2,7 @@ using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System;
 
 namespace PerfDS
 {
@@ -10,9 +11,9 @@ namespace PerfDS
     /// No background garbage collection of old values. Blocking cleanup of old values.
     /// typeparam name="TKey"
     /// typeparam name="TValue"
-    public class ReaderSnapshotSingleWriterDictionary<TKey, TValue>
+    public class SnapshotSingleWriterDictionary<TKey, TValue>
     {
-        public ReaderSnapshotSingleWriterDictionary()
+        public SnapshotSingleWriterDictionary()
         {
             this.version = 0;
             this.data = new ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>>();
@@ -35,15 +36,35 @@ namespace PerfDS
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            long myVersion = this.version;
+            return this.TryGetValue(key, out value, this.version);
+        }
 
+        public class SnapshotView
+        {
+            public SnapshotView(SnapshotSingleWriterDictionary<TKey, TValue> dictionary)
+            {
+                this.dictionary = dictionary;
+                this.myVersion = this.dictionary.GetReadVersion();
+            }
+
+            bool TryGetValue(TKey key, out TValue value)
+            {
+                return this.dictionary.TryGetValue(key, out value, this.myVersion);
+            }
+
+            long myVersion;
+            private SnapshotSingleWriterDictionary<TKey, TValue> dictionary;
+        }
+
+        private bool TryGetValue(TKey key, out TValue value, long readVersion)
+        {
             if (this.data.ContainsKey(key))
             {
                 // an already added key can't be deleted. Not handling GC as of now.
                 // values are added in desc order.
                 foreach (var versionedValue in this.data[key])
                 {
-                    if (versionedValue.version <= myVersion)
+                    if (versionedValue.version <= readVersion)
                     {
                         value = versionedValue.value;
                         return true;
@@ -55,7 +76,12 @@ namespace PerfDS
             return false;
         }
 
-        long version;
+        private long GetReadVersion()
+        {
+            return this.version;
+        }
+
+        private long version;
         private ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>> data;
 
         private struct ValueVersion<T>

@@ -14,7 +14,7 @@ namespace PerfDS
         {
             Prop.ForAll<Tuple<int, int>[]>(xs =>
             {
-                var dict = new ReaderSnapshotSingleWriterDictionary<int, int>();
+                var dict = new SnapshotSingleWriterDictionary<int, int>();
 
                 foreach (var x in xs)
                 {
@@ -31,7 +31,7 @@ namespace PerfDS
         {
             Prop.ForAll<Tuple<int, int>[]>(xs =>
             {
-                var dict = new ReaderSnapshotSingleWriterDictionary<int, int>();
+                var dict = new SnapshotSingleWriterDictionary<int, int>();
 
                 Array.Sort(xs);
 
@@ -67,7 +67,7 @@ namespace PerfDS
         {
             Prop.ForAll<int[]>(xs =>
             {
-                var dict = new ReaderSnapshotSingleWriterDictionary<int, int>();
+                var dict = new SnapshotSingleWriterDictionary<int, int>();
 
                 Array.Sort(xs);
 
@@ -106,7 +106,7 @@ namespace PerfDS
         {
             Prop.ForAll<int[]>(xs =>
             {
-                var dict = new ReaderSnapshotSingleWriterDictionary<int, int>();
+                var dict = new SnapshotSingleWriterDictionary<int, int>();
 
                 Array.Sort(xs);
 
