@@ -21,13 +21,21 @@ namespace PerfDS
 
         public void Add(TKey key, TValue value)
         {
-            // we know we have single writer.
-            if (!this.data.ContainsKey(key))
+            SyncVersionList<ValueVersion<TValue>> list;
+            bool found = this.data.TryGetValue(key, out list);
+            if (!found)
             {
-                this.data[key] = SyncVersionList<ValueVersion<TValue>>.Create();
+                list = SyncVersionList<ValueVersion<TValue>>.Create();
             }
 
-            this.data[key].Add(new ValueVersion<TValue>(this.version + 1, value));
+            list.Add(new ValueVersion<TValue>(this.version + 1, value));
+
+            if (!found)
+            {
+                // need to make SyncVersionList class for this to be atomic.
+                this.data[key] = list;
+            }
+
             // version is incremented after so that readers who start while `Add` has not finished
             // don't observe new value.
             // disallow reordering of next statement ? volatile `version`.
@@ -37,7 +45,18 @@ namespace PerfDS
         public bool TryGetValue(TKey key, out TValue value)
         {
             // TODO : just read the last item and don't iterate on the list.
-            return this.TryGetValue(key, out value, this.version);
+            // return this.TryGetValue(key, out value, this.version);
+
+            if (this.data.ContainsKey(key))
+            {
+                // an already added key can't be deleted. Not handling GC as of now.
+                // values are added in desc order.
+                value = this.data[key].Last().value;
+                return true;
+            }
+
+            value = default(TValue);
+            return false;
         }
 
         public SnapshotView GetSnapshot()
@@ -127,6 +146,19 @@ namespace PerfDS
                 finally
                 {
                     this.rwl.ExitWriteLock();
+                }
+            }
+
+            public T Last()
+            {
+                this.rwl.EnterReadLock();
+                try
+                {
+                    return this.values[this.values.Count - 1];
+                }
+                finally
+                {
+                    this.rwl.ExitReadLock();
                 }
             }
 

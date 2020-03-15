@@ -129,7 +129,7 @@ namespace PerfDS
     public class SnapshotSingleWriterDictionaryTestsMultiThread
     {
         [TestMethod]
-        public void SSWDReadersSeeLatestValues()
+        public void SSWDMTReadersSeeLatestValuesSameKey()
         {
             Prop.ForAll<int[]>(xs =>
             {
@@ -183,13 +183,80 @@ namespace PerfDS
                     allTasks.Add(new Task(readerFn));
                 }
 
-                foreach (var t in allTasks)
+                StartAndWaitAll(allTasks);
+            }).QuickCheckThrowOnFailure();
+        }
+
+        [TestMethod]
+        public void SSWDMTReadersSeeLatestValuesMultipleKeys()
+        {
+            Prop.ForAll<Tuple<int, int>[]>(kvs =>
+            {
+                var dict = new SnapshotSingleWriterDictionary<int, int>();
+
+                Array.Sort(kvs);
+
+                var writerTask = new Task(() => {
+                    foreach (var kv in kvs)
+                    {
+                        dict.Add(kv.Item1, kv.Item2);
+
+                        int actualValue = 0;
+                        Assert.IsTrue(dict.TryGetValue(kv.Item1, out actualValue));
+                        Assert.AreEqual(kv.Item2, actualValue);
+                    }
+                });
+
+                Action readerFn = () => {
+                    int lastValueSeen = -1, lastKeySeen = -1;
+                    if (kvs.Length > 0)
+                    {
+                        lastKeySeen = kvs[0].Item1;
+                        lastValueSeen = kvs[0].Item2;
+                    }
+
+                    foreach (var kv in kvs)
+                    {
+                        int newValue = 0;
+                        if (dict.TryGetValue(kv.Item1, out newValue))
+                        {
+                            // every reader should see value in increasing order.
+                            if ((lastKeySeen == kv.Item1) && (lastValueSeen > newValue))
+                            {
+                                Assert.Fail("Reader thread");
+                            }
+
+                            lastKeySeen = kv.Item1;
+                            lastValueSeen = newValue;
+                        }
+                    }
+                };
+
+                var allTasks = new List<Task>(10);
+                for (int i = 0; i < 4; ++i)
                 {
-                    t.Start();
+                    allTasks.Add(new Task(readerFn));
                 }
 
-                Task.WaitAll(allTasks.ToArray());
+                allTasks.Add(writerTask);
+
+                for (int i = 0; i < 5; ++i)
+                {
+                    allTasks.Add(new Task(readerFn));
+                }
+
+                StartAndWaitAll(allTasks);
             }).QuickCheckThrowOnFailure();
+        }
+
+        void StartAndWaitAll(List<Task> allTasks)
+        {
+            foreach (var t in allTasks)
+            {
+                t.Start();
+            }
+
+            Task.WaitAll(allTasks.ToArray());
         }
     }
 }
