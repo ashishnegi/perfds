@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>PerfDS.ListCompare-20200314-225327</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18363
+Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
+.NET Core SDK=2.2.108
+  [Host]     : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+  DefaultJob : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>                     Method</th><th>N</th><th>Mean</th><th>Error</th><th>StdDev</th>
+</tr>
+</thead><tbody><tr><td>SystemListAddAndIterate</td><td>10000</td><td>34.656 us</td><td>0.2654 us</td><td>0.2353 us</td>
+</tr><tr><td>PartitionedListAddAndIterate</td><td>10000</td><td>81.394 us</td><td>0.8049 us</td><td>0.7135 us</td>
+</tr><tr><td>SystemListAddOnly</td><td>10000</td><td>15.316 us</td><td>0.1874 us</td><td>0.1753 us</td>
+</tr><tr><td>PartitionedListAddOnly</td><td>10000</td><td>27.627 us</td><td>0.4028 us</td><td>0.3768 us</td>
+</tr><tr><td>SystemListAddOnlySizeUnknown</td><td>10000</td><td>24.360 us</td><td>0.3567 us</td><td>0.3162 us</td>
+</tr><tr><td>PartitionedListAddOnlySizeUnknown</td><td>10000</td><td>27.718 us</td><td>0.4295 us</td><td>0.3586 us</td>
+</tr><tr><td>ArrayAddOnly</td><td>10000</td><td>6.419 us</td><td>0.1241 us</td><td>0.1477 us</td>
+</tr><tr><td>SystemListAddAndIterate</td><td>100000</td><td>473.377 us</td><td>9.5049 us</td><td>11.3149 us</td>
+</tr><tr><td>PartitionedListAddAndIterate</td><td>100000</td><td>858.465 us</td><td>8.2485 us</td><td>7.7157 us</td>
+</tr><tr><td>SystemListAddOnly</td><td>100000</td><td>279.695 us</td><td>4.9558 us</td><td>4.3932 us</td>
+</tr><tr><td>PartitionedListAddOnly</td><td>100000</td><td>308.580 us</td><td>5.5199 us</td><td>4.8932 us</td>
+</tr><tr><td>SystemListAddOnlySizeUnknown</td><td>100000</td><td>427.819 us</td><td>5.9998 us</td><td>5.6122 us</td>
+</tr><tr><td>PartitionedListAddOnlySizeUnknown</td><td>100000</td><td>306.309 us</td><td>1.3961 us</td><td>1.3059 us</td>
+</tr><tr><td>ArrayAddOnly</td><td>100000</td><td>191.030 us</td><td>1.6156 us</td><td>1.4322 us</td>
+</tr></tbody></table>
+</body>
+</html>

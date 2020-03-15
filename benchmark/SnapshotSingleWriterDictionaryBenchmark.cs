@@ -5,9 +5,9 @@ using BenchmarkDotNet.Attributes;
 
 namespace PerfDS
 {
-    public class DictionaryCompare
+    public class DictionaryCompareAdd
     {
-        [Params(10000, 1000000)]
+        [Params(10000, 100000)]
         public int N;
 
         [Benchmark]
@@ -49,6 +49,69 @@ namespace PerfDS
             int value = -1;
             dict.TryGetValue(0, out value);
             return value;
+        }
+    }
+
+    public class DictionaryCompareGet
+    {
+        [Params(10000, 100000)]
+        public int N;
+
+        Dictionary<int, int> dict = new Dictionary<int, int>();
+        ConcurrentDictionary<int, int> cdict = new ConcurrentDictionary<int, int>();
+        SnapshotSingleWriterDictionary<int, int> sdict = new SnapshotSingleWriterDictionary<int, int>();
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            for (int i = 0; i < N; ++i)
+            {
+                dict.Add(i, i);
+                cdict.GetOrAdd(i, i);
+                sdict.Add(i, i);
+            }
+        }
+
+        [Benchmark]
+        public long SystemDictionaryGetOnly()
+        {
+            long sum = 0;
+            for (int i = 0; i < N; ++i)
+            {
+                int v = 0;
+                dict.TryGetValue(i, out v);
+                sum += v;
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
+        public long ConcurrentDictionaryGetOnly()
+        {
+            long sum = 0;
+            for (int i = 0; i < N; ++i)
+            {
+                int v = 0;
+                cdict.TryGetValue(i, out v);
+                sum += v;
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
+        public long SnapshotDictionaryGetOnly()
+        {
+            long sum = 0;
+            for (int i = 0; i < N; ++i)
+            {
+                int v = 0;
+                sdict.TryGetValue(i, out v);
+                sum += v;
+            }
+
+            return sum;
         }
     }
 }
