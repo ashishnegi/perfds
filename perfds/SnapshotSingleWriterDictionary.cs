@@ -26,10 +26,13 @@ namespace PerfDS
             bool found = this.data.TryGetValue(key, out list);
             if (!found)
             {
-                list = SyncVersionList<ValueVersion<TValue>>.Create();
+                list = SyncVersionList<ValueVersion<TValue>>.Create(new ValueVersion<TValue>(this.version + 1, value));
+            }
+            else
+            {
+                list.Add(new ValueVersion<TValue>(this.version + 1, value));
             }
 
-            list.Add(new ValueVersion<TValue>(this.version + 1, value));
 
             if (!found)
             {
@@ -171,10 +174,11 @@ namespace PerfDS
 
         private struct SyncVersionList<T> : IEnumerable<T>
         {
-            static public SyncVersionList<T> Create()
+            static public SyncVersionList<T> Create(T value)
             {
                 var ret = new SyncVersionList<T>();
                 ret.Initliaze();
+                ret.values.Add(value);
                 return ret;
             }
 
