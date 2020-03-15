@@ -32,7 +32,7 @@ namespace PerfDS
 
             if (!found)
             {
-                // need to make SyncVersionList class for this to be atomic.
+                // TODO need to make SyncVersionList class for this to be atomic.
                 this.data[key] = list;
             }
 
@@ -44,9 +44,6 @@ namespace PerfDS
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            // TODO : just read the last item and don't iterate on the list.
-            // return this.TryGetValue(key, out value, this.version);
-
             if (this.data.ContainsKey(key))
             {
                 // an already added key can't be deleted. Not handling GC as of now.

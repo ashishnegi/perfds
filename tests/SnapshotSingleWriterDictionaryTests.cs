@@ -128,6 +128,11 @@ namespace PerfDS
     [TestClass]
     public class SnapshotSingleWriterDictionaryTestsMultiThread
     {
+        public SnapshotSingleWriterDictionaryTestsMultiThread()
+        {
+            testConfiguration.MaxNbOfTest = 5000;
+        }
+
         [TestMethod]
         public void SSWDMTReadersSeeLatestValuesSameKey()
         {
@@ -184,7 +189,7 @@ namespace PerfDS
                 }
 
                 StartAndWaitAll(allTasks);
-            }).QuickCheckThrowOnFailure();
+            }).Check(testConfiguration);
         }
 
         [TestMethod]
@@ -246,7 +251,7 @@ namespace PerfDS
                 }
 
                 StartAndWaitAll(allTasks);
-            }).QuickCheckThrowOnFailure();
+            }).Check(testConfiguration);
         }
 
         void StartAndWaitAll(List<Task> allTasks)
@@ -258,5 +263,7 @@ namespace PerfDS
 
             Task.WaitAll(allTasks.ToArray());
         }
+
+        Configuration testConfiguration = Configuration.QuickThrowOnFailure;
     }
 }
