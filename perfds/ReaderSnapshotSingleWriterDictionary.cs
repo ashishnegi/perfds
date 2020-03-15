@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
@@ -13,7 +15,7 @@ namespace PerfDS
         public ReaderSnapshotSingleWriterDictionary()
         {
             this.version = 0;
-            this.data = new ConcurrentDictionary<TKey, LinkedList<ValueVersion<TValue>>>();
+            this.data = new ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>>();
         }
 
         public void Add(TKey key, TValue value)
@@ -21,10 +23,10 @@ namespace PerfDS
             // we know we have single writer.
             if (!this.data.ContainsKey(key))
             {
-                this.data[key] = new LinkedList<ValueVersion<TValue>>();
+                this.data[key] = SyncVersionList<ValueVersion<TValue>>.Create();
             }
 
-            this.data[key].AddFirst(new ValueVersion<TValue>(this.version + 1, value));
+            this.data[key].Add(new ValueVersion<TValue>(this.version + 1, value));
             // version is incremented after so that readers who start while `Add` has not finished
             // don't observe new value.
             // disallow reordering of next statement ? volatile `version`.
@@ -54,7 +56,7 @@ namespace PerfDS
         }
 
         long version;
-        private ConcurrentDictionary<TKey, LinkedList<ValueVersion<TValue>>> data;
+        private ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>> data;
 
         private struct ValueVersion<T>
         {
@@ -66,6 +68,60 @@ namespace PerfDS
                 this.version = version;
                 this.value = value;
             }
+        }
+
+        private struct SyncVersionList<T> : IEnumerable<T>
+        {
+            static public SyncVersionList<T> Create()
+            {
+                var ret = new SyncVersionList<T>();
+                ret.Initliaze();
+                return ret;
+            }
+
+            void Initliaze()
+            {
+                this.rwl = new ReaderWriterLockSlim();
+                this.values = new List<T>();
+            }
+
+            public void Add(T v)
+            {
+                this.rwl.EnterWriteLock();
+                try
+                {
+                    values.Add(v);
+                }
+                finally
+                {
+                    this.rwl.ExitWriteLock();
+                }
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                this.rwl.EnterReadLock();
+
+                try
+                {
+                    for (int i = this.values.Count - 1; i >= 0; --i)
+                    {
+                        yield return this.values[i];
+                    }
+                }
+                finally
+                {
+                    this.rwl.ExitReadLock();
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            private ReaderWriterLockSlim rwl;
+            private List<T> values;
         }
     }
 }

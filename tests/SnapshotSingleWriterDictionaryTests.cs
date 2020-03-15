@@ -2,8 +2,6 @@ using FsCheck;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace PerfDS
@@ -104,7 +102,7 @@ namespace PerfDS
     public class SnapshotSingleWriterDictionaryTestsMultiThread
     {
         [TestMethod]
-        public void SSWDLatestDataAvailableAfterWrite()
+        public void SSWDReadersSeeLatestValues()
         {
             Prop.ForAll<int[]>(xs =>
             {
