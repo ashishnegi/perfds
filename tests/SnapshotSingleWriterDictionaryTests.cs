@@ -108,20 +108,75 @@ namespace PerfDS
                     dict.Add(kv.Item1, kv.Item2);
                 }
 
-                var view = dict.GetSnapshot();
+                using (var view = dict.TakeSnapshot())
+                {
+                    foreach (var kv in kvs)
+                    {
+                        dict.Add(kv.Item1, kv.Item2 + 1);
+                        int actualValue;
+
+                        Assert.IsTrue(view.TryGetValue(kv.Item1, out actualValue));
+                        Assert.AreNotEqual(kv.Item2, actualValue);
+
+                        Assert.IsTrue(dict.TryGetValue(kv.Item1, out actualValue));
+                        Assert.AreNotEqual(kv.Item2 + 1, actualValue);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void SSWDPruneReduceOldValues()
+        {
+            Prop.ForAll<Tuple<int, int>[]>(kvs => {
+                var dict = new SnapshotSingleWriterDictionary<int, int>();
+
+                foreach (var kv in kvs)
+                {
+                    dict.Add(kv.Item1, kv.Item2);
+                }
+
+                Assert.AreEqual(0, dict.Test_OldValueCount());
 
                 foreach (var kv in kvs)
                 {
                     dict.Add(kv.Item1, kv.Item2 + 1);
-                    int actualValue;
-
-                    Assert.IsTrue(view.TryGetValue(kv.Item1, out actualValue));
-                    Assert.AreNotEqual(kv.Item2, actualValue);
-
-                    Assert.IsTrue(dict.TryGetValue(kv.Item1, out actualValue));
-                    Assert.AreNotEqual(kv.Item2 + 1, actualValue);
                 }
+
+                Assert.AreEqual(kvs.Length, dict.Test_OldValueCount());
+
+                dict.BlockingPruneOldValues();
+
+                Assert.AreEqual(0, dict.Test_OldValueCount());
             });
+        }
+
+        [TestMethod]
+        public void SSWDNoPruneDuringSnapshot()
+        {
+            var dict = new SnapshotSingleWriterDictionary<int, int>();
+
+            for (int i = 0; i < 10; ++i)
+            {
+                dict.Add(i, i);
+            }
+
+            var view = dict.TakeSnapshot();
+
+            var t = new Task(() => dict.BlockingPruneOldValues());
+            t.Start();
+
+            for (int i = 0; i < 10; ++i)
+            {
+                int actualValue = 0;
+                Assert.IsTrue(view.TryGetValue(i, out actualValue));
+                Assert.AreEqual(i, actualValue);
+            }
+
+            Assert.IsFalse(t.IsCompleted);
+
+            view.Dispose();
+            t.Wait();
         }
     }
 

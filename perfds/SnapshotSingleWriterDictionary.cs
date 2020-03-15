@@ -16,6 +16,7 @@ namespace PerfDS
         public SnapshotSingleWriterDictionary()
         {
             this.version = 0;
+            this.pruneLock = new ReaderWriterLockSlim();
             this.data = new ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>>();
         }
 
@@ -56,14 +57,58 @@ namespace PerfDS
             return false;
         }
 
-        public SnapshotView GetSnapshot()
+        public void BlockingPruneOldValues()
         {
+            // Write lock Waits for all snapshot views to finish.
+            // TODO : optimize to prune only what can be done
+            // with more info about ongoing snapshot views.
+
+            this.pruneLock.EnterWriteLock();
+            try
+            {
+                foreach (var kv in this.data)
+                {
+                    kv.Value.PruneOld();
+                }
+            }
+            finally
+            {
+                this.pruneLock.ExitWriteLock();
+            }
+        }
+
+        /// Should call Dispose on SnapshotView to release the snapshot.
+        public SnapshotView TakeSnapshot()
+        {
+            this.pruneLock.EnterReadLock();
             return new SnapshotView(this);
         }
 
-        public class SnapshotView
+        internal void ReleaseSnapshot()
         {
-            public SnapshotView(SnapshotSingleWriterDictionary<TKey, TValue> dictionary)
+            this.pruneLock.ExitReadLock();
+        }
+
+        internal int Test_OldValueCount()
+        {
+            int count = 0;
+
+            foreach (var kv in this.data)
+            {
+                var vCount = kv.Value.Count();
+                if (vCount > 1)
+                {
+                    count += vCount - 1;
+                }
+            }
+
+            return count;
+        }
+
+
+        public class SnapshotView : IDisposable
+        {
+            internal SnapshotView(SnapshotSingleWriterDictionary<TKey, TValue> dictionary)
             {
                 this.dictionary = dictionary;
                 this.myVersion = this.dictionary.GetReadVersion();
@@ -72,6 +117,11 @@ namespace PerfDS
             public bool TryGetValue(TKey key, out TValue value)
             {
                 return this.dictionary.TryGetValue(key, out value, this.myVersion);
+            }
+
+            public void Dispose()
+            {
+                this.dictionary.ReleaseSnapshot();
             }
 
             long myVersion;
@@ -104,6 +154,7 @@ namespace PerfDS
         }
 
         private long version;
+        private ReaderWriterLockSlim pruneLock;
         private ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>> data;
 
         private struct ValueVersion<T>
@@ -133,7 +184,7 @@ namespace PerfDS
                 this.values = new List<T>();
             }
 
-            public void Add(T v)
+            internal void Add(T v)
             {
                 this.rwl.EnterWriteLock();
                 try
@@ -146,7 +197,7 @@ namespace PerfDS
                 }
             }
 
-            public T Last()
+            internal T Last()
             {
                 this.rwl.EnterReadLock();
                 try
@@ -158,6 +209,20 @@ namespace PerfDS
                     this.rwl.ExitReadLock();
                 }
             }
+
+            internal void PruneOld()
+            {
+                this.rwl.EnterWriteLock();
+                try
+                {
+                    this.values.RemoveRange(0, values.Count - 1);
+                }
+                finally
+                {
+                    this.rwl.ExitWriteLock();
+                }
+            }
+
 
             public IEnumerator<T> GetEnumerator()
             {
@@ -179,6 +244,20 @@ namespace PerfDS
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
+            }
+
+            internal int Count()
+            {
+                this.rwl.EnterReadLock();
+
+                try
+                {
+                    return this.values.Count;
+                }
+                finally
+                {
+                    this.rwl.ExitReadLock();
+                }
             }
 
             private ReaderWriterLockSlim rwl;
