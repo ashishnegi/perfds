@@ -248,7 +248,7 @@ namespace PerfDS
         }
 
         [TestMethod]
-        public void SSWDMTReadersSeeLatestValuesMultipleKeys()
+        public void SSWDMTReadersSeeLatestValuesMultipleKeysMultiWrites()
         {
             Prop.ForAll<Tuple<int, int>[]>(kvs =>
             {
@@ -256,14 +256,28 @@ namespace PerfDS
 
                 Array.Sort(kvs);
 
+                int iterationsPerKey = 10;
+
                 var writerTask = new Task(() => {
+                    int lastKey = -1;
                     foreach (var kv in kvs)
                     {
-                        dict.Add(kv.Item1, kv.Item2);
+                        if (kv.Item1 == lastKey)
+                        {
+                            // don't want to add lower value for this key after writing higher value.
+                            continue;
+                        }
 
-                        int actualValue = 0;
-                        Assert.IsTrue(dict.TryGetValue(kv.Item1, out actualValue));
-                        Assert.AreEqual(kv.Item2, actualValue);
+                        lastKey = kv.Item1;
+
+                        for (int i = 0; i < iterationsPerKey; ++i)
+                        {
+                            dict.Add(kv.Item1, kv.Item2 + i);
+
+                            int actualValue = 0;
+                            Assert.IsTrue(dict.TryGetValue(kv.Item1, out actualValue));
+                            Assert.AreEqual(kv.Item2 + i, actualValue);
+                        }
                     }
                 });
 
@@ -278,29 +292,37 @@ namespace PerfDS
                     foreach (var kv in kvs)
                     {
                         int newValue = 0;
-                        if (dict.TryGetValue(kv.Item1, out newValue))
-                        {
-                            // every reader should see value in increasing order.
-                            if ((lastKeySeen == kv.Item1) && (lastValueSeen > newValue))
-                            {
-                                Assert.Fail("Reader thread");
-                            }
 
-                            lastKeySeen = kv.Item1;
-                            lastValueSeen = newValue;
+                        for (int i = 0; i < iterationsPerKey; ++i)
+                        {
+                            if (dict.TryGetValue(kv.Item1, out newValue))
+                            {
+                                // every reader should see value in increasing order.
+                                if ((lastKeySeen == kv.Item1) && (lastValueSeen > newValue))
+                                {
+                                    Assert.Fail("Reader thread");
+                                }
+
+                                lastKeySeen = kv.Item1;
+                                lastValueSeen = newValue;
+                            }
                         }
                     }
                 };
 
-                var allTasks = new List<Task>(10);
-                for (int i = 0; i < 4; ++i)
+                int numTasks = 10;
+                int firstReaders = 2;
+
+                var allTasks = new List<Task>(numTasks);
+
+                for (int i = 0; i < firstReaders; ++i)
                 {
                     allTasks.Add(new Task(readerFn));
                 }
 
                 allTasks.Add(writerTask);
 
-                for (int i = 0; i < 5; ++i)
+                for (int i = 0; i < numTasks - 1 - firstReaders; ++i)
                 {
                     allTasks.Add(new Task(readerFn));
                 }

@@ -17,16 +17,16 @@ namespace PerfDS
         {
             this.version = 0;
             this.pruneLock = new ReaderWriterLockSlim();
-            this.data = new ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>>();
+            this.data = new ConcurrentDictionary<TKey, SyncVersionList<TValue>>();
         }
 
         public void Add(TKey key, TValue value)
         {
-            SyncVersionList<ValueVersion<TValue>> list;
+            SyncVersionList<TValue> list;
             bool found = this.data.TryGetValue(key, out list);
             if (!found)
             {
-                list = SyncVersionList<ValueVersion<TValue>>.Create(new ValueVersion<TValue>(this.version + 1, value));
+                list = SyncVersionList<TValue>.Create(new ValueVersion<TValue>(this.version + 1, value));
             }
             else
             {
@@ -52,7 +52,7 @@ namespace PerfDS
             {
                 // an already added key can't be deleted. Not handling GC as of now.
                 // values are added in desc order.
-                value = this.data[key].Last().value;
+                value = this.data[key].Last();
                 return true;
             }
 
@@ -158,7 +158,7 @@ namespace PerfDS
 
         private long version;
         private ReaderWriterLockSlim pruneLock;
-        private ConcurrentDictionary<TKey, SyncVersionList<ValueVersion<TValue>>> data;
+        private ConcurrentDictionary<TKey, SyncVersionList<TValue>> data;
 
         private struct ValueVersion<T>
         {
@@ -172,28 +172,42 @@ namespace PerfDS
             }
         }
 
-        private struct SyncVersionList<T> : IEnumerable<T>
+        private class SyncVersionList<T> : IEnumerable<ValueVersion<T>>
         {
-            static public SyncVersionList<T> Create(T value)
+            static public SyncVersionList<T> Create(ValueVersion<T> value)
             {
                 var ret = new SyncVersionList<T>();
-                ret.Initliaze();
-                ret.values.Add(value);
+                ret.Initliaze(value);
                 return ret;
             }
 
-            void Initliaze()
+            void Initliaze(ValueVersion<T> value)
             {
                 this.rwl = new ReaderWriterLockSlim();
-                this.values = new List<T>();
+                this.values = new List<ValueVersion<T>>();
+                this.values.Add(value);
             }
 
-            internal void Add(T v)
+            internal void Add(ValueVersion<T> v)
             {
                 this.rwl.EnterWriteLock();
                 try
                 {
-                    values.Add(v);
+                    this.values.Add(v);
+
+                    var count = this.values.Count;
+                    if (count > 1)
+                    {
+                        var lastVersion = this.values[count - 2].version;
+                        if (lastVersion >= v.version)
+                        {
+                            Environment.FailFast(string.Format("Received lower version value {1} after adding higher version {0}. Value: {2], List: {3]",
+                                lastVersion,
+                                v.version,
+                                v,
+                                this.values));
+                        }
+                    }
                 }
                 finally
                 {
@@ -206,7 +220,7 @@ namespace PerfDS
                 this.rwl.EnterReadLock();
                 try
                 {
-                    return this.values[this.values.Count - 1];
+                    return this.values[this.values.Count - 1].value;
                 }
                 finally
                 {
@@ -228,7 +242,7 @@ namespace PerfDS
             }
 
 
-            public IEnumerator<T> GetEnumerator()
+            public IEnumerator<ValueVersion<T>> GetEnumerator()
             {
                 this.rwl.EnterReadLock();
 
@@ -265,7 +279,7 @@ namespace PerfDS
             }
 
             private ReaderWriterLockSlim rwl;
-            private List<T> values;
+            private List<ValueVersion<T>> values;
         }
     }
 }
