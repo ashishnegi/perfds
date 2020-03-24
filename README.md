@@ -1,8 +1,16 @@
 # Perf data structures in C#
 
 ```
-D:\gitrepos\perfds>set PATH=%PATH%;..\..\..\..\tools\dotnet-sdk-2.2.108-win-x64\
+D:\gitrepos\perfds>set PATH=%PATH%;D:\tools\dotnet-sdk-2.2.108-win-x64\
 code .
+
+pushd test
+dotnet test -c Release --filter ConcurrentEnqueAndDequeue
+popd
+
+pushd benchmark
+dotnet run -c Release -- -f *Dequeue
+popd
 ```
 
 ## PartitionedList
@@ -17,6 +25,9 @@ Constraints:
 1. Only single writer can write at a time.
 2. There is no background pruning of old values. To prune old values, you need to call API which will block snapshot view readers during pruning.
    Point reads and single writer will continue to work during pruning.
+
+## ConcurrentAsyncQueue
+You can dequeue items from queue without blocking.
 
 ## Good points
 1. Used property based random input data testing to find bugs.
@@ -85,4 +96,21 @@ Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
 |     SystemDictionaryGetOnly | 1000000 |  7,735.82 us |  51.994 us |  48.635 us |
 | ConcurrentDictionaryGetOnly | 1000000 | 20,512.34 us | 308.474 us | 257.589 us |
 |   SnapshotDictionaryGetOnly | 1000000 | 76,608.19 us | 146.169 us | 129.575 us |
+
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18363
+Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
+.NET Core SDK=2.2.108
+  [Host]     : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+  DefaultJob : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+
+
+|                                Method |     N |         Mean |      Error |     StdDev |
+|-------------------------------------- |------ |-------------:|-----------:|-----------:|
+|         ConcurrentQueueEnqueueDequeue |   100 |     2.158 us |  0.0509 us |  0.1501 us |
+|    ConcurrentAsyncQueueEnqueueDequeue |   100 |     9.351 us |  0.1860 us |  0.5247 us |
+| BlockingCollectionQueueEnqueueDequeue |   100 |    11.498 us |  0.2278 us |  0.5281 us |
+|         ConcurrentQueueEnqueueDequeue | 10000 |   202.651 us |  4.0078 us |  8.4537 us |
+|    ConcurrentAsyncQueueEnqueueDequeue | 10000 |   938.006 us | 18.6603 us | 53.5400 us |
+| BlockingCollectionQueueEnqueueDequeue | 10000 | 1,128.594 us | 22.4870 us | 61.1776 us |
+
 ```

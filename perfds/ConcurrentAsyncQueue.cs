@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PerfDS
 {
-    public class ConcurrentAsyncQueue<T>
+    public class ConcurrentAsyncQueue<T> : IDisposable
     {
         private readonly SemaphoreSlim waitSem;
         private readonly ConcurrentQueue<T> queue;
@@ -46,6 +46,11 @@ namespace PerfDS
 
             Environment.FailFast("Expected item after WaitAsync finishes.");
             return default(T);
+        }
+
+        public void Dispose()
+        {
+            this.waitSem.Dispose();
         }
     }
 
