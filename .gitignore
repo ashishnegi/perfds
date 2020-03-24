@@ -3,3 +3,5 @@ obj
 objd
 packages
 .vs
+*.dmp
+dump_symbols
