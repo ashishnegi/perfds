@@ -19,20 +19,14 @@ namespace PerfDS
 
         [TestMethod]
         public void ConcurrentEnqueAndDequeueHappensInOrder()
-        {            
+        {
             Prop.ForAll<int[]>(xs =>
             {
                 var queue = new ConcurrentAsyncQueue<int>();
-                Task writerTask = new Task(() =>
-                {
-                    foreach (var x in xs)
-                    {
-                        queue.Enqueue(x);
-                    }
-                });
+                var writerTask = WriterTask(xs, queue);
 
                 bool allSuccess = true;
-                Task readerTask = new Task(async () =>
+                Task readerTask = Task.Run(async () =>
                 {
                     foreach (var expected in xs)
                     {
@@ -41,9 +35,6 @@ namespace PerfDS
                         allSuccess = allSuccess && (expected == actual);
                     }
                 });
-
-                readerTask.Start();
-                writerTask.Start();
 
                 Task.WaitAll(writerTask, readerTask);
 
@@ -54,35 +45,18 @@ namespace PerfDS
         [TestMethod]
         public void ConcurrentEnqueAndDequeueMultiReaders()
         {
+            // Multiple Readers assert that they receive values in increasing order.
+            // All values should be received.
             Prop.ForAll<int[]>(expectedList =>
             {
                 Array.Sort(expectedList);
 
                 var queue = new ConcurrentAsyncQueue<int>();
-                Task writerTask = new Task(() =>
-                {
-                    foreach (var x in expectedList)
-                    {
-                        queue.Enqueue(x);
-                    }
-                });
-
                 var cancelSource = new CancellationTokenSource();
                 CancellationToken cancelToken = cancelSource.Token;
-
                 long remainingToRead = expectedList.Length;
-
-                var stopTask = new Task(async () =>
-                {
-                    while (Interlocked.Read(ref remainingToRead) > 0)
-                    {
-                        await Task.Delay(10);
-                    }
-
-                    cancelSource.Cancel();
-                });
-
                 int startValue = 0;
+
                 if (expectedList.Length > 0)
                 {
                     startValue = expectedList[0];
@@ -107,8 +81,8 @@ namespace PerfDS
 
                 allTasks.Add(reader2);
 
-                allTasks.Add(writerTask);
-                writerTask.Start();
+                // writer task
+                allTasks.Add(WriterTask(expectedList, queue));
 
                 var reader3 = ReaderTask(startValue, cancelToken, queue, (a, b) =>
                 {
@@ -126,8 +100,16 @@ namespace PerfDS
 
                 allTasks.Add(reader4);
 
-                allTasks.Add(stopTask);
-                stopTask.Start();
+                // Stop Task
+                allTasks.Add(Task.Run(async () =>
+                {
+                    while (Interlocked.Read(ref remainingToRead) > 0)
+                    {
+                        await Task.Delay(10);
+                    }
+
+                    cancelSource.Cancel();
+                }));
 
                 Task.WaitAll(allTasks.ToArray());
 
@@ -139,6 +121,7 @@ namespace PerfDS
         [TestMethod]
         public void ConcurrentEnqueAndDequeueMultiWriters()
         {
+            // One reader assert all values should be received.
             Prop.ForAll<int[]>(expectedList =>
             {
                 Array.Sort(expectedList);
@@ -189,7 +172,7 @@ namespace PerfDS
 
                     cancelSource.Cancel();
                 }));
-                
+
                 Task.WaitAll(allTasks.ToArray());
 
                 var actualList = reader1.Result;
@@ -200,6 +183,7 @@ namespace PerfDS
         [TestMethod]
         public void ConcurrentEnqueAndDequeueMultiReadersWriters()
         {
+            // Multiple readers assert all values should be received.
             Prop.ForAll<int[]>(expectedList =>
             {
                 Array.Sort(expectedList);
@@ -274,6 +258,17 @@ namespace PerfDS
             }).Check(testConfig);
         }
 
+        static Task WriterTask<T>(T[] list, ConcurrentAsyncQueue<T> queue)
+        {
+            return Task.Run(() =>
+            {
+                foreach (var x in list)
+                {
+                    queue.Enqueue(x);
+                }
+            });
+        }
+
         static private void AssertIfNotEqual(int[] expectedList, List<int> actualList)
         {
             Assert.AreEqual(expectedList.Length, actualList.Count);
@@ -296,7 +291,7 @@ namespace PerfDS
 
         static async Task<List<T>> ReaderTask<T>(T startValueRead, CancellationToken cancelToken, ConcurrentAsyncQueue<T> queue, Action<T, T> afterReadValue)
         {
-           T lastValueRead = startValueRead;
+            T lastValueRead = startValueRead;
 
             var list = new List<T>();
             while (!cancelToken.IsCancellationRequested)

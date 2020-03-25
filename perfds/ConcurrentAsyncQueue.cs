@@ -53,5 +53,4 @@ namespace PerfDS
             this.waitSem.Dispose();
         }
     }
-
 }
