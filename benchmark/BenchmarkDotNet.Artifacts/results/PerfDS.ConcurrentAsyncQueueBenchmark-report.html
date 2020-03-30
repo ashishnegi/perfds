@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>PerfDS.ConcurrentAsyncQueueBenchmark-20200324-155545</title>
+<title>PerfDS.ConcurrentAsyncQueueBenchmark-20200325-115322</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -22,14 +22,14 @@ Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
 <pre><code></code></pre>
 
 <table>
-<thead><tr><th>                         Method</th><th>N</th><th>  Mean</th><th>Error</th><th>StdDev</th>
+<thead><tr><th>                         Method</th><th>N</th><th>  Mean</th><th>Error</th><th>StdDev</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
 </tr>
-</thead><tbody><tr><td>ConcurrentQueueEnqueueDequeue</td><td>100</td><td>2.158 us</td><td>0.0509 us</td><td>0.1501 us</td>
-</tr><tr><td>ConcurrentAsyncQueueEnqueueDequeue</td><td>100</td><td>9.351 us</td><td>0.1860 us</td><td>0.5247 us</td>
-</tr><tr><td>BlockingCollectionQueueEnqueueDequeue</td><td>100</td><td>11.498 us</td><td>0.2278 us</td><td>0.5281 us</td>
-</tr><tr><td>ConcurrentQueueEnqueueDequeue</td><td>10000</td><td>202.651 us</td><td>4.0078 us</td><td>8.4537 us</td>
-</tr><tr><td>ConcurrentAsyncQueueEnqueueDequeue</td><td>10000</td><td>938.006 us</td><td>18.6603 us</td><td>53.5400 us</td>
-</tr><tr><td>BlockingCollectionQueueEnqueueDequeue</td><td>10000</td><td>1,128.594 us</td><td>22.4870 us</td><td>61.1776 us</td>
+</thead><tbody><tr><td>ConcurrentQueueEnqueueDequeue</td><td>100</td><td>2.155 us</td><td>0.0431 us</td><td>0.0999 us</td><td>0.1755</td><td>-</td><td>-</td><td>768 B</td>
+</tr><tr><td>ConcurrentAsyncQueueEnqueueDequeue</td><td>100</td><td>9.326 us</td><td>0.1834 us</td><td>0.3988 us</td><td>1.7242</td><td>-</td><td>-</td><td>7512 B</td>
+</tr><tr><td>BlockingCollectionQueueEnqueueDequeue</td><td>100</td><td>11.574 us</td><td>0.2297 us</td><td>0.6736 us</td><td>0.2289</td><td>-</td><td>-</td><td>1056 B</td>
+</tr><tr><td>ConcurrentQueueEnqueueDequeue</td><td>10000</td><td>203.541 us</td><td>4.0292 us</td><td>10.1823 us</td><td>-</td><td>-</td><td>-</td><td>768 B</td>
+</tr><tr><td>ConcurrentAsyncQueueEnqueueDequeue</td><td>10000</td><td>903.440 us</td><td>18.0253 us</td><td>30.1163 us</td><td>166.0156</td><td>-</td><td>-</td><td>720312 B</td>
+</tr><tr><td>BlockingCollectionQueueEnqueueDequeue</td><td>10000</td><td>1,063.805 us</td><td>21.0520 us</td><td>34.5890 us</td><td>-</td><td>-</td><td>-</td><td>1056 B</td>
 </tr></tbody></table>
 </body>
 </html>
