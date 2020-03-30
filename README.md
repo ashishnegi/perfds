@@ -113,6 +113,24 @@ Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
 |    ConcurrentAsyncQueueEnqueueDequeue | 10000 |   938.006 us | 18.6603 us | 53.5400 us |
 | BlockingCollectionQueueEnqueueDequeue | 10000 | 1,128.594 us | 22.4870 us | 61.1776 us |
 
+
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18362
+Intel Core i7-7700HQ CPU 2.80GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
+.NET Core SDK=3.1.201
+  [Host]     : .NET Core 3.1.3 (CoreCLR 4.700.20.11803, CoreFX 4.700.20.12001), X64 RyuJIT
+  DefaultJob : .NET Core 3.1.3 (CoreCLR 4.700.20.11803, CoreFX 4.700.20.12001), X64 RyuJIT
+
+
+|               Method |    N |        Mean |     Error |   StdDev |
+|--------------------- |----- |------------:|----------:|---------:|
+|              Sum1000 | 1000 |    485.8 ns |  39.85 ns | 116.2 ns |
+|           Atomic1000 | 1000 |  5,448.6 ns | 107.40 ns | 179.4 ns |
+| MutexUncontended1000 | 1000 | 20,288.4 ns | 508.17 ns | 543.7 ns |
+
+// * Warnings *
+MultimodalDistribution
+  Synchronization.Sum1000: Default -> It seems that the distribution is multimodal (mValue = 4.91)
+
 > dotnet run  -c Release -- -m --filter *Dequeue
 
 BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18363
