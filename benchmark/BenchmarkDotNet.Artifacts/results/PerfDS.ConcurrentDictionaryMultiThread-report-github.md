@@ -8,9 +8,9 @@ Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
 
 
 ```
-|                     Method |      N | NumThreads |      Mean |     Error |    StdDev |    Median |
-|--------------------------- |------- |----------- |----------:|----------:|----------:|----------:|
-| **ConcurrentDictionaryAddGet** | **100000** |          **1** |  **5.034 ms** | **0.1024 ms** | **0.2987 ms** |  **5.004 ms** |
-| **ConcurrentDictionaryAddGet** | **100000** |          **2** |  **7.594 ms** | **0.1809 ms** | **0.5334 ms** |  **7.544 ms** |
-| **ConcurrentDictionaryAddGet** | **100000** |          **4** | **10.224 ms** | **0.2039 ms** | **0.4120 ms** | **10.389 ms** |
-| **ConcurrentDictionaryAddGet** | **100000** |          **8** | **15.112 ms** | **0.2492 ms** | **0.2331 ms** | **15.096 ms** |
+|                     Method |      N | NumThreads |      Mean |     Error |    StdDev |
+|--------------------------- |------- |----------- |----------:|----------:|----------:|
+| **ConcurrentDictionaryAddGet** | **100000** |          **1** |  **9.272 ms** | **0.4882 ms** | **1.4394 ms** |
+| **ConcurrentDictionaryAddGet** | **100000** |          **2** | **12.570 ms** | **0.8658 ms** | **2.5529 ms** |
+| **ConcurrentDictionaryAddGet** | **100000** |          **4** | **12.039 ms** | **0.5146 ms** | **1.5175 ms** |
+| **ConcurrentDictionaryAddGet** | **100000** |          **8** | **17.288 ms** | **0.2746 ms** | **0.2569 ms** |

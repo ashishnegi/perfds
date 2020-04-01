@@ -149,5 +149,42 @@ Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
 |    ConcurrentAsyncQueueEnqueueDequeue | 10000 |   903.440 us | 18.0253 us | 30.1163 us | 166.0156 |     - |     - |  720312 B |
 | BlockingCollectionQueueEnqueueDequeue | 10000 | 1,063.805 us | 21.0520 us | 34.5890 us |        - |     - |     - |    1056 B |
 
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18363
+Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
+.NET Core SDK=2.2.108
+  [Host]     : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+  DefaultJob : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
 
+
+|    Method |      N | NumThreads |     Mean |    Error |   StdDev |   Median |
+|---------- |------- |----------- |---------:|---------:|---------:|---------:|
+| EmptyTask | 100000 |          1 | 270.5 us | 13.98 us | 41.21 us | 275.3 us |
+| EmptyTask | 100000 |          2 | 335.6 us | 12.13 us | 35.75 us | 326.2 us |
+| EmptyTask | 100000 |          4 | 526.4 us |  4.38 us |  3.89 us | 526.0 us |
+| EmptyTask | 100000 |          8 | 982.9 us | 16.24 us | 15.19 us | 982.6 us |
+
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18363
+Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
+.NET Core SDK=2.2.108
+  [Host]     : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+  DefaultJob : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+
+
+|                     Method |      N | NumThreads |      Mean |     Error |    StdDev |
+|--------------------------- |------- |----------- |----------:|----------:|----------:|
+| ConcurrentDictionaryAddGet | 100000 |          1 |  9.272 ms | 0.4882 ms | 1.4394 ms |
+| ConcurrentDictionaryAddGet | 100000 |          2 | 12.570 ms | 0.8658 ms | 2.5529 ms |
+| ConcurrentDictionaryAddGet | 100000 |          4 | 12.039 ms | 0.5146 ms | 1.5175 ms |
+| ConcurrentDictionaryAddGet | 100000 |          8 | 17.288 ms | 0.2746 ms | 0.2569 ms |
+
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18363
+Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
+.NET Core SDK=2.2.108
+  [Host]     : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+  DefaultJob : .NET Core 2.2.6 (CoreCLR 4.6.27817.03, CoreFX 4.6.27818.02), X64 RyuJIT
+
+
+|                     Method |      N |     Mean |     Error |    StdDev |
+|--------------------------- |------- |---------:|----------:|----------:|
+| ConcurrentDictionaryAddGet | 100000 | 4.453 ms | 0.0755 ms | 0.0707 ms |
 ```

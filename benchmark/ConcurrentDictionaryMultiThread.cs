@@ -33,7 +33,7 @@ namespace PerfDS
             var tasks = new List<Task<long>>(NumThreads);
             for (int i = 0; i < NumThreads; ++i)
             {
-                tasks.Add(Task.Run(() => {
+                tasks.Add(Task.Factory.StartNew<long>(() => {
                     long internal_sum = 0;
                     int v = 0;
 
@@ -45,7 +45,7 @@ namespace PerfDS
                     }
 
                     return internal_sum;
-                }));
+                }, TaskCreationOptions.LongRunning));
             }
 
             await Task.WhenAll(tasks);
@@ -60,5 +60,79 @@ namespace PerfDS
         }
 
         ConcurrentDictionary<int, int> cdict = new ConcurrentDictionary<int, int>();
+    }
+
+    public class ConcurrentDictionarySingleThread
+    {
+        [Params(100000)]
+        public int N;
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            // Adding all the data beforehand
+            // so that multiple invocations of benchmark fn
+            // work on similar ConcurrentDictionary.
+            // we could have used IterationSetup/Cleanup but that plays well only with > 100 msec benchmarks.
+            for (int i = 0; i < N; ++i)
+            {
+                cdict.TryAdd(i, i);
+            }
+        }
+
+        [Benchmark]
+        public long ConcurrentDictionaryAddGet()
+        {
+            long internal_sum = 0;
+            int v = 0;
+
+            for (int j = 0; j < N; ++j)
+            {
+                cdict.TryAdd(j, j);
+                cdict.TryGetValue(j, out v);
+                internal_sum += v;
+            }
+
+            return internal_sum;
+        }
+
+        ConcurrentDictionary<int, int> cdict = new ConcurrentDictionary<int, int>();
+    }
+
+    public class AddMultiThreaded
+    {
+        [Params(100000)]
+        public int N;
+
+        [Params(1, 2, 4, 8)]
+        public int NumThreads;
+
+        [Benchmark]
+        public async Task<long> EmptyTask()
+        {
+            var tasks = new List<Task<long>>(NumThreads);
+
+            for (int i = 0; i < NumThreads; ++i)
+            {
+                tasks.Add(Task.Factory.StartNew<long>(() => {
+                    long internal_sum = 0;
+                    for (int j = 0; j < N; ++j)
+                    {
+                        internal_sum += j;
+                    }
+                    return internal_sum;
+                }, TaskCreationOptions.LongRunning));
+            }
+
+            await Task.WhenAll(tasks);
+
+            long sum = 0;
+            foreach (var t in tasks)
+            {
+                sum += t.Result;
+            }
+
+            return sum;
+        }
     }
 }

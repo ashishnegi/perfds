@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>PerfDS.ConcurrentDictionaryMultiThread-20200331-162416</title>
+<title>PerfDS.AddMultiThreaded-20200331-162131</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -22,12 +22,12 @@ Intel Xeon W-2133 CPU 3.60GHz, 1 CPU, 12 logical and 6 physical cores
 <pre><code></code></pre>
 
 <table>
-<thead><tr><th>              Method</th><th>N</th><th>NumThreads</th><th>Mean</th><th>Error</th><th>StdDev</th>
+<thead><tr><th>Method</th><th>N</th><th>NumThreads</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th>
 </tr>
-</thead><tbody><tr><td>ConcurrentDictionaryAddGet</td><td>100000</td><td>1</td><td>9.272 ms</td><td>0.4882 ms</td><td>1.4394 ms</td>
-</tr><tr><td>ConcurrentDictionaryAddGet</td><td>100000</td><td>2</td><td>12.570 ms</td><td>0.8658 ms</td><td>2.5529 ms</td>
-</tr><tr><td>ConcurrentDictionaryAddGet</td><td>100000</td><td>4</td><td>12.039 ms</td><td>0.5146 ms</td><td>1.5175 ms</td>
-</tr><tr><td>ConcurrentDictionaryAddGet</td><td>100000</td><td>8</td><td>17.288 ms</td><td>0.2746 ms</td><td>0.2569 ms</td>
+</thead><tbody><tr><td>EmptyTask</td><td>100000</td><td>1</td><td>270.5 us</td><td>13.98 us</td><td>41.21 us</td><td>275.3 us</td>
+</tr><tr><td>EmptyTask</td><td>100000</td><td>2</td><td>335.6 us</td><td>12.13 us</td><td>35.75 us</td><td>326.2 us</td>
+</tr><tr><td>EmptyTask</td><td>100000</td><td>4</td><td>526.4 us</td><td>4.38 us</td><td>3.89 us</td><td>526.0 us</td>
+</tr><tr><td>EmptyTask</td><td>100000</td><td>8</td><td>982.9 us</td><td>16.24 us</td><td>15.19 us</td><td>982.6 us</td>
 </tr></tbody></table>
 </body>
 </html>
